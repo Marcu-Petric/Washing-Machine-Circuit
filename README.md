@@ -3,10 +3,10 @@
 ## Table of Contents
 - [Specifications](#specifications)
 - [Design](#design)
+  - [State Diagram](#state-diagram-of-the-control-unit)
   - [Black Box](#black-box)
   - [Resources](#resources-breakdown-of-the-execution-unit)
   - [Block Diagram](#block-diagram-for-first-breakdown)
-  - [State Diagram](#state-diagram-of-the-control-unit)
 - [🔥 **USER MANUAL** 🔥](#user-manual)
   > ### ⚡ IMPORTANT: PLEASE READ BEFORE USE! ⚡
 - [Technical Justifications](#technical-justifications-for-the-design)
@@ -61,9 +61,19 @@ The machine is initially idle, with the washing machine door open. The user can 
 
 ---
 
-# Design {#design}
+## Design {#design}
 
-## Black Box {#black-box}
+### State diagram of the Control Unit {#state-diagram-of-the-control-unit}
+
+> **📋 Note:** The complete state diagram is available in the project files at:
+> [`state_diagram.pdf`](state_diagram.pdf)
+>
+> Due to its complexity and size, the full state diagram is better viewed in the PDF format where you can:
+> - Zoom in to see all details
+> - Navigate through all states and transitions
+> - Print in high resolution if needed
+
+### Black Box {#black-box}
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/ca2cf6b6-253b-4d1e-8597-59d7dc42e5b6" alt="Black Box">
@@ -122,9 +132,9 @@ We can divide both inputs and outputs into 2 categories: **data** and **control*
 - HEAT  
 - DRAIN
 
-## Resources (breakdown of the Execution Unit) {#resources-(breakdown-of-the-execution-unit)}
+### Resources (breakdown of the Execution Unit) {#resources-(breakdown-of-the-execution-unit)}
 
-### Temperature state counter   
+#### Temperature state counter   
    
 
 This resource will store which temperature we want to use, encoded on 2-bits. It has 4 inputs:
@@ -140,7 +150,7 @@ This resource will store which temperature we want to use, encoded on 2-bits. It
 
 ![A yellow rectangular object with black textDescription automatically generated with low confidence][image4]
 
-### RPM state counter 
+#### RPM state counter 
 
 This resource will store which rotation speed we want to use, encoded on 2-bits. It has 4 inputs:
 
@@ -155,7 +165,7 @@ This resource will store which rotation speed we want to use, encoded on 2-bits.
 
 ![A yellow rectangular object with black textDescription automatically generated with low confidence][image5]
 
-###  MUX\_timer
+####  MUX\_timer
 
 This resource "decides" how many minutes and hours will be loaded on the timer based on the mode, extra rinsing, prewash and the temperature counter. The inputs come from the "ER and PW register", "mode register" and "temperature counter" resources.  
 The outputs are the hours and minutes in binary, on 6 bits.  
@@ -164,13 +174,13 @@ The outputs are the hours and minutes in binary, on 6 bits.
   <img src="https://github.com/user-attachments/assets/acb15393-4e80-42bf-835f-ea68845ff35a" alt="MUX Timer">
 </div>
 
-### ONEsec frequency divider
+#### ONEsec frequency divider
 
 This resource receives the clock from the FPGA (100mHZ) as input and generates a new clock with the frequency of 1HZ and 50% duty cycle.
 
 
 
-### Minute timer
+#### Minute timer
 
 This resource stores the remaining minutes. It has the following inputs:
 
@@ -184,7 +194,7 @@ This resource stores the remaining minutes. It has the following inputs:
   <img src="https://github.com/user-attachments/assets/948310a6-3e5b-4c1d-aaf1-551d72d1644a" alt="Minute Timer">
 </div>
 
-### Hours Timer
+#### Hours Timer
 
 This resource stores the remaining hours, it has the following inputs:
 
@@ -197,7 +207,7 @@ The output is on 6 bits, and it represents the remaining number of hours.
 
 ![A picture containing text, screenshot, diagram, lineDescription automatically generated][image9]
 
-### MUX Temperature mode
+#### MUX Temperature mode
 
 This resource decides what temperature is used by the washing machine. If the manual mode is selected, the mux will give the temperature from the state counter. If an automatic mode is selected, the mux will give the preset temperature for the respective mode (encoded on 2-bits).  
 The inputs are received from the "temperature counter" and "mode register" resources in EU.
@@ -207,13 +217,13 @@ The inputs are received from the "temperature counter" and "mode register" resou
 </div>
 
 
-### MUX RPM mode
+#### MUX RPM mode
 
 This resource decides what rotation speed is used by the washing machine. If the manual mode is selected, the mux will give the speed from the state counter. If an automatic mode is selected, the mux will give the preset speed for the respective mode (encoded on 2-bits).  
 The inputs are received from the "temperature counter" and "mode register" resources in EU.
 
 
-### Temperature output
+#### Temperature output
 
 This resource decodes the temperature mode into two digits numbers on the 7-segment display. It receives a 2-bit input from the "MUX temperature mode" and gives 2 outputs on 7-bits to "output control" resource.
 
@@ -221,7 +231,7 @@ This resource decodes the temperature mode into two digits numbers on the 7-segm
   <img src="https://github.com/user-attachments/assets/4b787499-4d18-41cd-9af3-360f6cee613c" alt="Temperature Output">
 </div>
 
-### RPM output
+#### RPM output
 
 This resource decodes the rotation speed mode into two digits numbers on the 7-segment display. It receives a 2-bit input from the "MUX RPM mode" and gives 2 outputs on 7-bits to "output control" resource.
 
@@ -229,12 +239,12 @@ This resource decodes the rotation speed mode into two digits numbers on the 7-s
   <img src="https://github.com/user-attachments/assets/0e318d83-0dc1-45bf-aa22-258269179460" alt="RPM Output">
 </div>
 
-### FrequencyDIVIDER
+#### FrequencyDIVIDER
 
 This resource receives the clock from the FPGA as input and converts it into signals for moving the anodes for the display and for text moving animation.
 
 
-### Number to 7seg
+#### Number to 7seg
 
 This resource converts a number with two digits on 6 bits directly into two 7-segment digits on 7-bits. The output will go into "output control" component.  
 
@@ -242,12 +252,12 @@ This resource converts a number with two digits on 6 bits directly into two 7-se
   <img src="https://github.com/user-attachments/assets/830e81ef-eb1b-49fc-b96e-9191480a9965" alt="Number to 7seg">
 </div>
 
-### Blink
+#### Blink
 
 This resource receives a signal CLK with frequency 1Hz from "ONEsec" component, enable from CU and two digits in 7-segment encoding. If enable is activated, the output will be the given digits blinking and if en '0', the digits will be unchanged. Two of these components are used in the EU.
 
 
-### Move
+#### Move
 
 This resource receives "newClock2" output from "frequencyDivider" as "clk" input as well as done, error and start from CU. It generates a moving massage on the 7-segments based on the input. The outputs are 8 segments on 7-bits representing the display.  
 
@@ -255,7 +265,7 @@ This resource receives "newClock2" output from "frequencyDivider" as "clk" input
   <img src="https://github.com/user-attachments/assets/f83025cc-3ad4-4ba8-a493-d4f6f92af746" alt="Move">
 </div>
 
-### Outputs control
+#### Outputs control
 
 This component receives as inputs:
 
@@ -263,7 +273,7 @@ This component receives as inputs:
 * 8 segments for displaying an animation when one of the above inputs is active  
 * 8 segments for displaying the time remaining, temperature and RPM used otherwise.The 8 outputs on 7-bits are what will be displayed on the 7-segments.
 
-### Anodes
+#### Anodes
 
 This resource implements the display on the FPGA. It receives "newClock" output from "frequencyDivider" as "clk" input and 8 arrays on 7-bits each.  
 The outputs are an 8-bits array representing the anodes of the FPGA and a 7-bits array representing the cathodes.  On every clock cycle, the anodes will shift right circularly starting from "10000000" and for every activated bit an\[i\] in the array, segment no. 'i' will be displayed creating the illusion of 8 different segments simultaneously.
@@ -272,7 +282,7 @@ The outputs are an 8-bits array representing the anodes of the FPGA and a 7-bits
   <img src="https://github.com/user-attachments/assets/1ef9c0ba-c62e-419d-8b08-59ce2c090556" alt="Anodes">
 </div>
 
-### Register for modes
+#### Register for modes
 
 This resource receives as inputs:
 
@@ -283,12 +293,12 @@ This resource receives as inputs:
 When en is active, the register will parallel load the input "ld". The output on 5-bits is the register's value.
 
 
-### Debouncer 
+#### Debouncer 
 
 This component receives as inputs the clock from the FGPA it's 5 buttons. As outputs it generates the debounced signal from the buttons.
 
 
-### Timer10
+#### Timer10
 
 This is a 4-bit modulo-10 counter. This circuit will have a *T10* output that will be true when 10 minutes have passed. In addition, we want to start or stop the counter at the right time, so it needs Enable input *EN10*.
 
@@ -298,35 +308,25 @@ This is a 4-bit modulo-10 counter. This circuit will have a *T10* output that wi
 
 So, we have an output *T10* signal generated by E.U. for C.U. and an *EN10* signal generated by C.U. to E.U. We also have a *synchronous Reset10* signal generated by C.U.
 
-### 20 minutes TIMER20 counter
+#### 20 minutes TIMER20 counter
 
 This is a 5-bit modulo 20 counter. This circuit will have a *T20* output that will be true when 20 minutes have passed. In addition, we want to start or stop the counter at the right time, so it needs Enable input *EN20*.  
 
 So, we have an output *T20* signal generated by E.U. for C.U. and an *EN20* signal generated by C.U. to E.U. We also have a *synchronous Reset20* signal generated by C.U.
 
-### 3 seconds TIMER3 counter
+#### 3 seconds TIMER3 counter
 
 This is a 2-bit modulo 3 counter. This circuit will have a *T3* output that will be true when 3 seconds have passed. In addition, we want to start or stop the counter at the right time so it needs Enable input *EN3*.  
 
 So, we have an output *T3* signal generated by E.U. for C.U. and an *EN3* signal generated by C.U. to E.U. We also have a *synchronous Reset3* signal generated by C.U.
 
-## Block Diagram for first breakdown	 {#block-diagram-for-first-breakdown}
+### Block Diagram for first breakdown	 {#block-diagram-for-first-breakdown}
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/fd49f2fd-2303-4d4e-b17a-a835a0e6e348" alt="Block Diagram" style="background-color: white;">
 </div>
 
-## State diagram of the Control Unit {#state-diagram-of-the-control-unit}
-
-> **📋 Note:** The complete state diagram is available in the project files at:
-> [`state_diagram.pdf`](state_diagram.pdf)
->
-> Due to its complexity and size, the full state diagram is better viewed in the PDF format where you can:
-> - Zoom in to see all details
-> - Navigate through all states and transitions
-> - Print in high resolution if needed
-
-# User manual {#user-manual}
+## User manual {#user-manual}
 
 When you power on the machine, you will be greeted with the massage HELLO on the display.  
 Select the mode you want to use from the following switches.  
@@ -382,7 +382,7 @@ The moving "HELLO" message brings a personal touch into the using experience and
  For storing the preset information about the automatic modes, we decided to use MUXs instead of memory to make the design faster and cheaper.   
 Overall, we wanted to show the power and beauty of the FPGA board thought a charming and informative design that attracts numerous potential clients. 
 
-# Future developments {#future-developments}
+## Future developments {#future-developments}
 
 ### 🔄 Pause Switch
 - Requires additional register for state storage
